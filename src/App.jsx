@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom"
-import GamePage from "../pages/GamePage.jsx"
+import GamePage from "./pages/GamePage";
 
 function App() {
 

@@ -1,9 +1,10 @@
 import {Chessboard, defaultPieces} from "react-chessboard";
-import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import { useAtom, useSetAtom } from "jotai";
-import { fenAtom, isGameOverAtom, resultAtom, turnAtom } from "../utils/ChessAtom";
+import { fenAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
+import playSound from "../hooks/playSound";
+import socket from "../services/socket";
 
 function ChessGame(){
      const [fen, setFen] = useAtom(fenAtom);
@@ -29,52 +30,44 @@ function ChessGame(){
       }, [chess]);
 
       useEffect(()=>{
-           async function fetch() {
-                await axios.get("http://localhost:3000/game").then((res)=>{
-                    setFen(res.data.fen);
-                    setTurn(res.data.turn);
-                    setResult(res.data.isGameOver);
-                })
-           }
-           fetch()
+          function handleGameState(data){
+              setFen(data.fen);
+              setTurn(data.trun);
+              setResult(data.isGameOver);
+          }
+          socket.on("gameState", handleGameState);
+          return () => socket.off("gameState", handleGameState);
       },[])
 
-      function playSound(soundName) {
-      const audio = new Audio(`/sounds/${soundName}.mp3`);
-
-      audio.play().catch((err) => {
-        console.log("Sound playback failed:", err);
-          });
-        }
-
       function onPieceDrop({ sourceSquare, targetSquare }){
-        axios.post("http://localhost:3000/move",{
-          from: sourceSquare,
-          to: targetSquare
-        }).then((res)=>{
-          if(res.data.valid){
-            setFen(res.data.fen);
-            setTurn(res.data.turn);
-            setSelectedSquare("");
-            setLegalMoves([]);
-            setIsCheckmate(res.data.isCheckmate);
-            if(res.data.isGameOver){
-                setResult("win")
+          socket.emit("gameMove",{
+            from: sourceSquare, 
+            to: targetSquare
+          },
+        (data)=>{
+            if(data.valid){
+               setFen(data.fen),
+               setTurn(data.turn);
+               setIsCheckmate(data.isCheckmate);
+                if(data.isGameOver){
+                    setResult("win");
+                      }
+                      if(data.check && !data.isCheckmate){
+                          playSound("check");
+                      }else if(data.captured){
+                          playSound("capture")
+                      }else {
+                        playSound("move");
+                }
             }
-            if (res.data.check && !res.data.isCheckmate) {
-                playSound("check");
-              } else if (res.data.captured) {
-                playSound("capture");
-              } else {
-                playSound("move");
-              }
-          }
-        }).catch((err)=>{
-          console.log("Request failed: ", err);
-        });
-
-        return false;
+        })
       }
+
+      useEffect(()=>{
+         socket.on("connect", ()=>{
+            console.log("My socket id:", socket.id);
+         })
+      },[]);
 
       function getMoveOptions(square){
           const moves = chess.moves({square, verbose: true});
