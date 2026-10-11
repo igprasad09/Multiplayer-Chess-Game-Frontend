@@ -2,7 +2,7 @@ import {Chessboard, defaultPieces} from "react-chessboard";
 import { useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import { useAtom, useSetAtom } from "jotai";
-import { fenAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
+import { fenAtom, gameColorAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
 import playSound from "../hooks/playSound";
 import socket from "../services/socket";
 
@@ -13,6 +13,8 @@ function ChessGame(){
       const [legalMoves, setLegalMoves] = useState([]);
       const [isCheckmate, setIsCheckmate] = useState(false);
       const setResult = useSetAtom(resultAtom); 
+      const [color, setColor] = useAtom(gameColorAtom);
+      const [gameStatus, setGameStatus] = useState("waiting");
 
       const chess = useMemo(()=> new Chess(fen), [fen]);
 
@@ -29,15 +31,25 @@ function ChessGame(){
         return null;
       }, [chess]);
 
-      useEffect(()=>{
-          function handleGameState(data){
-              setFen(data.fen);
-              setTurn(data.trun);
-              setResult(data.isGameOver);
-          }
-          socket.on("gameState", handleGameState);
-          return () => socket.off("gameState", handleGameState);
-      },[])
+      useEffect(() => {
+          socket.on("waitingForOpponent", ()=> setGameStatus("waiting"));
+          socket.on("matched", ({gameId, color})=>{
+              setColor(color);
+              setGameStatus("playing");
+          });
+          socket.on("opponentLeft", () => setGameStatus("opponent-left"));
+          socket.on("gameState", (data) => {
+               setFen(data.fen);
+               setTurn(data.turn);
+               if(data.isDraw) {setResult("draw")}
+               if(data.isGameOver){
+                   setResult(data.winner ? (data.winner === color ? "win" : "loss") : "draw");
+               }else{
+                   setResult(false);
+               }
+          });
+          return () => socket.off("waitingForOpponent").off("matched").off("opponentLeft").off("gameState");
+      },[color]);
 
       function onPieceDrop({ sourceSquare, targetSquare }){
           socket.emit("gameMove",{
@@ -49,9 +61,6 @@ function ChessGame(){
                setFen(data.fen),
                setTurn(data.turn);
                setIsCheckmate(data.isCheckmate);
-                if(data.isGameOver){
-                    setResult("win");
-                      }
                       if(data.check && !data.isCheckmate){
                           playSound("check");
                       }else if(data.captured){
@@ -59,6 +68,8 @@ function ChessGame(){
                       }else {
                         playSound("move");
                 }
+            }else{
+                console.log("Move rejected:", data.reason);
             }
         })
       }
@@ -140,7 +151,15 @@ function ChessGame(){
         onSquareClick: onSquareClick,
         squareStyles: squareStyles,
         pieces: pieces,
+        boardOrientation: color === "black" ? "black" : "white",
       }
+
+    if (gameStatus === "waiting") {
+      return <div className="text-white text-2xl">Waiting for opponent...</div>;
+    }
+    if (gameStatus === "opponent-left") {
+      return <div className="text-white text-2xl">Opponent disconnected.</div>;
+    }
 
     return (
         <div className="size-150">
