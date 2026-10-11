@@ -1,8 +1,9 @@
-import ChessGame from "../components/ChessGame";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { fenAtom, resultAtom, turnAtom } from "../utils/ChessAtom";
+import { useAtom, useSetAtom } from "jotai";
+import { fenAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
 import axios from "axios";
 import GameOver from "../components/GameOver";
+import ChessGame from "../components/ChessGame";
+import socket from "../services/socket";
 
 function GamePage(){
     const [turn, setTurn] = useAtom(turnAtom);
@@ -10,10 +11,10 @@ function GamePage(){
     const [result, setResult] = useAtom(resultAtom);
 
     async function handleResetGame() {
-              await axios.post("http://localhost:3000/resetgame").then((res)=>{
-                  console.log("Reset: ", res.data)
-                  setFen(res.data.fen);
-                  setTurn(res.data.turn);
+              socket.emit("resetGame",(data)=>{
+                  console.log("Reset: ", data)
+                  setFen(data.fen);
+                  setTurn(data.turn);
                   setResult(false)
               })
            }
