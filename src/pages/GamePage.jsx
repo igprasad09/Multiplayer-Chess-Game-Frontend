@@ -1,5 +1,5 @@
-import { useAtom, useSetAtom } from "jotai";
-import { fenAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { fenAtom, gameColorAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
 import axios from "axios";
 import GameOver from "../components/GameOver";
 import ChessGame from "../components/ChessGame";
@@ -9,14 +9,16 @@ function GamePage(){
     const [turn, setTurn] = useAtom(turnAtom);
     const setFen = useSetAtom(fenAtom);
     const [result, setResult] = useAtom(resultAtom);
+    const color = useAtomValue(gameColorAtom);
 
     async function handleResetGame() {
               socket.emit("resetGame",(data)=>{
                   console.log("Reset: ", data)
                   setFen(data.fen);
+                  console.log(data.fen)
                   setTurn(data.turn);
                   setResult(false)
-              })
+              });
            }
 
     return (
@@ -24,10 +26,11 @@ function GamePage(){
             <div className="flex">
               <h1 className="text-4xl font-bold m-auto text-white">Turn: {turn == "b" ? "Black" : "White"}</h1>
               <button onClick={handleResetGame} className="bg-red-500 px-3 hover:bg-red-600">Reset</button>
+              <h1 className="text-2xl text-white">Yours Color is: {color}</h1>
             </div>
             <ChessGame/>
-            {result && <GameOver 
-                result={result?"win":"loss"} 
+            {result && <GameOver
+                result={result}
                 handleResetGame={handleResetGame}/>
               }
       </div>
