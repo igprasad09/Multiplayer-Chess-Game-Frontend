@@ -1,6 +1,15 @@
+import { useEffect } from "react";
+import playSound from "../hooks/playSound";
 
 function GameOver({ result, handleResetGame }) {
-
+  useEffect(()=>{
+      if(result == "win") {playSound("win")}
+      if(result == "loss") {playSound("loss")}
+      return () => {
+        if(result == "win") {playSound("win", true)}
+        if(result == "loss") {playSound("loss", true)}
+      }
+  },[result])
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
         {result == "win" ? (<div className="bg-gray-900 w-90 rounded-2xl flex flex-col items-center gap-4">
