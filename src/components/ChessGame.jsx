@@ -153,6 +153,8 @@ function ChessGame(){
         squareStyles: squareStyles,
         pieces: pieces,
         boardOrientation: color === "black" ? "black" : "white",
+        darkSquareStyle: { backgroundColor: "#769656" },
+        lightSquareStyle: { backgroundColor: "#eeeed2" },
       }
 
     if (gameStatus === "waiting") {
