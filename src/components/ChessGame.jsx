@@ -1,7 +1,7 @@
 import {Chessboard, defaultPieces} from "react-chessboard";
 import { useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom } from "jotai";
 import { fenAtom, gameColorAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
 import playSound from "../hooks/playSound";
 import socket from "../services/socket";
@@ -12,7 +12,7 @@ function ChessGame(){
       const [selectedSquare, setSelectedSquare] = useState("");
       const [legalMoves, setLegalMoves] = useState([]);
       const [isCheckmate, setIsCheckmate] = useState(false);
-      const setResult = useSetAtom(resultAtom); 
+      const [result, setResult] = useAtom(resultAtom); 
       const [color, setColor] = useAtom(gameColorAtom);
       const [gameStatus, setGameStatus] = useState("waiting");
 
@@ -44,6 +44,7 @@ function ChessGame(){
                if(data.isDraw) {setResult("draw")}
                if(data.isGameOver){
                    setResult(data.winner ? (data.winner === color ? "win" : "loss") : "draw");
+                  console.log(result);
                }else{
                    setResult(false);
                }
@@ -152,6 +153,8 @@ function ChessGame(){
         squareStyles: squareStyles,
         pieces: pieces,
         boardOrientation: color === "black" ? "black" : "white",
+        darkSquareStyle: { backgroundColor: "#769656" },
+        lightSquareStyle: { backgroundColor: "#eeeed2" },
       }
 
     if (gameStatus === "waiting") {

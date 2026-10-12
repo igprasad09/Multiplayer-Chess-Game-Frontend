@@ -4,6 +4,7 @@ import axios from "axios";
 import GameOver from "../components/GameOver";
 import ChessGame from "../components/ChessGame";
 import socket from "../services/socket";
+import playSound from "../hooks/playSound";
 
 function GamePage(){
     const [turn, setTurn] = useAtom(turnAtom);
@@ -13,12 +14,11 @@ function GamePage(){
 
     async function handleResetGame() {
               socket.emit("resetGame",(data)=>{
-                  console.log("Reset: ", data)
                   setFen(data.fen);
-                  console.log(data.fen)
                   setTurn(data.turn);
                   setResult(false)
               });
+              playSound("win", true);
            }
 
     return (
