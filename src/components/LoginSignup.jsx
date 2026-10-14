@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -34,6 +35,7 @@ const INPUT_CLASSES =
 function LoginSignup(){
     const [showPassword, setShowPassword] = useState(false);
     const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(true);
     const location = useLocation();
     const [loginSignup, setLoginSignup] = useState("login");
@@ -44,6 +46,30 @@ function LoginSignup(){
          setLoginSignup(res);
          console.log("locaiton: ",location.pathname)
     },[location])
+    
+    async function handleAuth(){
+        if(loginSignup == "login"){
+
+            await axios.post("http://localhost:3000/auth/login", 
+                {username, password},
+                {withCredentials: true}).then((res)=>{
+                    console.log(res.data)
+                }).catch((err)=>{
+                    console.log(err)
+                })
+
+        }else{
+
+            await axios.post("http://localhost:3000/auth/signup", 
+                {username, password},
+                {withCredentials: true}).then((res)=>{
+                    console.log(res.data)
+                }).catch((err)=>{
+                    console.log(err)
+                })
+
+        }
+    }
 
     // Load whatever was remembered last time this page mounts.
     useEffect(() => {
@@ -63,18 +89,6 @@ function LoginSignup(){
         }
     };
 
-    const handleUsernameChange = (e) => {
-        const value = e.target.value;
-        setUsername(value);
-        if (rememberMe) {
-            localStorage.setItem(USERNAME_KEY, value);
-        }
-    };
-
-    // TODO: once login hits the backend, use `rememberMe` to decide where
-    // the auth token/session goes: localStorage (survives closing the
-    // browser) when true, sessionStorage (cleared on tab close) when false.
-
     return(
         <div className="bg-zinc-900 transition duration-300 ease-in-out rounded-md mt-9 grid p-5 content-start w-100 gap-2">
                     <div className="relative m-2">
@@ -85,8 +99,9 @@ function LoginSignup(){
                             className={`${INPUT_CLASSES} pl-10 pr-3`}
                             type="text"
                             placeholder="Username"
+                            required
                             value={username}
-                            onChange={handleUsernameChange}
+                            onChange={(e)=>setUsername(e.target.value)}
                         />
                     </div>
 
@@ -98,6 +113,9 @@ function LoginSignup(){
                             className={`${INPUT_CLASSES} pl-10 pr-10`}
                             type={showPassword ? "text" : "password"}
                             placeholder="Password"
+                            required
+                            value={password}
+                            onChange={(e)=> setPassword(e.target.value)}
                         />
                         <button
                             type="button"
@@ -129,6 +147,7 @@ function LoginSignup(){
 
                     <button
                         type="button"
+                        onClick={handleAuth}
                         className="m-2 transition-colors duration-300 ease-in-out h-12 cursor-pointer rounded-sm bg-[#45a52e] hover:bg-[#3faa24] text-white font-bold text-lg"
                     >
                          {loginSignup == "login" ? "Account Already Created" : "Create New Account"}
