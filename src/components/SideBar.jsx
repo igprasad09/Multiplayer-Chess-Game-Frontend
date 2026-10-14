@@ -1,7 +1,16 @@
+import { useAtomValue } from "jotai";
 import { useNavigate } from "react-router-dom";
+import { reLoginAtom } from "../utils/store/ChessAtom";
+import { useEffect } from "react";
 
 function SideBar(){
     const navigate = useNavigate();
+    const relogin = useAtomValue(reLoginAtom);
+
+    useEffect(()=>{
+          console.log(relogin);
+    }, [relogin])
+
     return (<div className="h-screen bg-neutral-900 w-90 flex flex-col justify-between">
 
          <div className="">
@@ -27,10 +36,10 @@ function SideBar(){
                 <input className="w-full pl-9 bg-gray-800 p-2 rounded-sm placeholder:text-neutral-300 font-bold outline-none" type="text" placeholder="Search Your Friends"/>
             </div> */}
 
-            <div className="mx-4 mt-6 grid gap-3">
+            {relogin && (<div className="mx-4 mt-6 grid gap-3">
                 <button onClick={()=>{navigate("/signup")}} className="bg-[#88c749] hover:bg-[#749c46] w-40 text-[18px] transition duration-200 ease-in-out text-white font-bold py-2 rounded-sm cursor-pointer">Sign Up</button>
                 <button onClick={()=>{ navigate("/login") }} className="bg-neutral-700 w-40 hover:bg-neutral-600 transition duration-200 ease-in-out text-white font-bold py-2 rounded-sm cursor-pointer">Log In</button>
-            </div>
+            </div>)}
         </div>
 
     </div>)
