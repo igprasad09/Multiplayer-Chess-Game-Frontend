@@ -5,5 +5,5 @@ export const fenAtom = atom("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq 
 export const resultAtom = atom("");
 export const isGameOverAtom = atom(false);
 export const gameColorAtom = atom(null);
-export const userNameAtom = atom("igprasad09");
+export const userNameAtom = atom("");
 export const reLoginAtom = atom(null);
