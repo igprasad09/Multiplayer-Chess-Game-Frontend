@@ -6,4 +6,6 @@ export const resultAtom = atom("");
 export const isGameOverAtom = atom(false);
 export const gameColorAtom = atom(null);
 export const userNameAtom = atom("");
+export const opponentUsernameAtom = atom("");
 export const reLoginAtom = atom(null);
+export const tokenAtom = atom(null);
