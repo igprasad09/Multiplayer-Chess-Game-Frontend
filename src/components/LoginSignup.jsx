@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useSetAtom } from "jotai";
-import { reLoginAtom, userNameAtom } from "../utils/store/ChessAtom";
+import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
 
 const REMEMBER_KEY = "chess_remember_me";
 const USERNAME_KEY = "chess_remembered_username";
@@ -45,6 +45,7 @@ function LoginSignup(){
     const navigate = useNavigate();
     const setRelogin = useSetAtom(reLoginAtom);
     const setUsernameinatom = useSetAtom(userNameAtom);
+    const setToken = useSetAtom(tokenAtom);
 
     useEffect(()=>{
          const res = location.pathname == "/login" ? "login" : "signup";
@@ -65,6 +66,7 @@ function LoginSignup(){
                 throw new Error(res.data.message || "Something went wrong");
             }
             setUsernameinatom(res.data.username);
+            setToken(res.data.token);
             setRelogin(false);
             navigate("/home");
             return res.data;

@@ -5,15 +5,17 @@ import ChessBoardView from "../components/ChessBoardView";
 import PlayChessPanal from "../components/PlayChessPanal";
 import axios from "axios";
 import { useEffect } from "react";
-import { useSetAtom } from "jotai";
-import { reLoginAtom, userNameAtom } from "../utils/store/ChessAtom";
+import { useAtom, useSetAtom } from "jotai";
+import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
 
 function HomePage(){
     const navigate = useNavigate();
     const setRelogin = useSetAtom(reLoginAtom);
     const setUsername = useSetAtom(userNameAtom);
+    const [token, setToken] = useAtom(tokenAtom);
 
     function handleStartGame(){
+        socket.auth = { token };
         socket.connect();
         navigate("/game")
     }
@@ -26,6 +28,7 @@ function HomePage(){
                         if(res.data.success){
                             setRelogin(false);
                             setUsername(res.data.username);
+                            setToken(res.data.token);
                         }
                 }).catch((err)=>{
                      setRelogin(true);
@@ -38,7 +41,7 @@ function HomePage(){
     return (<div className="bg-neutral-800 h-screen flex">
           <SideBar />
           <ChessBoardView/>
-          <PlayChessPanal />
+          <PlayChessPanal onPlayOnline={handleStartGame} />
     </div>)
 }
 

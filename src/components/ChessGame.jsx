@@ -1,8 +1,8 @@
 import {Chessboard, defaultPieces} from "react-chessboard";
 import { useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
-import { useAtom } from "jotai";
-import { fenAtom, gameColorAtom, resultAtom, turnAtom } from "../utils/store/ChessAtom";
+import { useAtom, useAtomValue } from "jotai";
+import { fenAtom, gameColorAtom, opponentUsernameAtom, resultAtom, turnAtom, userNameAtom } from "../utils/store/ChessAtom";
 import playSound from "../hooks/playSound";
 import socket from "../services/socket";
 
@@ -14,6 +14,8 @@ function ChessGame(){
       const [isCheckmate, setIsCheckmate] = useState(false);
       const [result, setResult] = useAtom(resultAtom); 
       const [color, setColor] = useAtom(gameColorAtom);
+      const [opponentUsername, setOpponentUsername] = useAtom(opponentUsernameAtom);
+      const username = useAtomValue(userNameAtom);
       const [gameStatus, setGameStatus] = useState("waiting");
 
       const chess = useMemo(()=> new Chess(fen), [fen]);
@@ -33,9 +35,11 @@ function ChessGame(){
 
       useEffect(() => {
           socket.on("waitingForOpponent", ()=> setGameStatus("waiting"));
-          socket.on("matched", ({gameId, color})=>{
+          socket.on("matched", ({gameId, color, opponentUsername})=>{
               setColor(color);
+              setOpponentUsername(opponentUsername);
               setGameStatus("playing");
+              console.log("Me:", username, "| Opponent:", opponentUsername);
           });
           socket.on("opponentLeft", () => setGameStatus("opponent-left"));
           socket.on("gameState", (data) => {
