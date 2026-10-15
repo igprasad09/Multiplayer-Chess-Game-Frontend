@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import { useSetAtom } from "jotai";
+import { reLoginAtom, userNameAtom } from "../utils/store/ChessAtom";
 
 const REMEMBER_KEY = "chess_remember_me";
 const USERNAME_KEY = "chess_remembered_username";
@@ -40,6 +43,8 @@ function LoginSignup(){
     const location = useLocation();
     const [loginSignup, setLoginSignup] = useState("login");
     const navigate = useNavigate();
+    const setRelogin = useSetAtom(reLoginAtom);
+    const setUsernameinatom = useSetAtom(userNameAtom);
 
     useEffect(()=>{
          const res = location.pathname == "/login" ? "login" : "signup";
@@ -48,26 +53,38 @@ function LoginSignup(){
     },[location])
     
     async function handleAuth(){
-        if(loginSignup == "login"){
+        if(!username || !password){return toast.error("Enter Username and Password")}
 
-            await axios.post("http://localhost:3000/auth/login", 
-                {username, password},
-                {withCredentials: true}).then((res)=>{
-                    console.log(res.data)
-                }).catch((err)=>{
-                    console.log(err)
-                })
+        const url = loginSignup == "login"
+            ? "http://localhost:3000/auth/login"
+            : "http://localhost:3000/auth/signup";
 
-        }else{
+        async function authRequest(){
+            const res = await axios.post(url, {username, password}, {withCredentials: true});
+            if(!res.data.success){
+                throw new Error(res.data.message || "Something went wrong");
+            }
+            setUsernameinatom(res.data.username);
+            setRelogin(false);
+            navigate("/home");
+            return res.data;
+        }
 
-            await axios.post("http://localhost:3000/auth/signup", 
-                {username, password},
-                {withCredentials: true}).then((res)=>{
-                    console.log(res.data)
-                }).catch((err)=>{
-                    console.log(err)
-                })
+        function getErrorMessage(err){
+            const data = err.response?.data;
+            if(data?.message) return data.message;
+            if(data?.errors?.length) return data.errors[0].message;
+            return err.message || "Something went wrong";
+        }
 
+        try{
+            await toast.promise(authRequest(), {
+                loading: loginSignup == "login" ? "Logging in..." : "Creating account...",
+                success: (data) => data.message,
+                error: getErrorMessage,
+            });
+        }catch(err){
+            console.log(err);
         }
     }
 
@@ -91,6 +108,7 @@ function LoginSignup(){
 
     return(
         <div className="bg-zinc-900 transition duration-300 ease-in-out rounded-md mt-9 grid p-5 content-start w-100 gap-2">
+                   <Toaster position="top-right" />
                     <div className="relative m-2">
                         <span className="absolute inset-y-0 left-3 flex items-center text-zinc-400">
                             <UserIcon />
@@ -101,7 +119,7 @@ function LoginSignup(){
                             placeholder="Username"
                             required
                             value={username}
-                            onChange={(e)=>setUsername(e.target.value)}
+                            onChange={(e)=>setUsername(e.target.value.trim())}
                         />
                     </div>
 
@@ -115,7 +133,7 @@ function LoginSignup(){
                             placeholder="Password"
                             required
                             value={password}
-                            onChange={(e)=> setPassword(e.target.value)}
+                            onChange={(e)=> setPassword(e.target.value.trim())}
                         />
                         <button
                             type="button"
@@ -148,7 +166,7 @@ function LoginSignup(){
                     <button
                         type="button"
                         onClick={handleAuth}
-                        className="m-2 transition-colors duration-300 ease-in-out h-12 cursor-pointer rounded-sm bg-[#45a52e] hover:bg-[#3faa24] text-white font-bold text-lg"
+                        className={`m-2 transition-colors duration-300 ease-in-out h-12 cursor-pointer rounded-sm ${!username || !password ? "bg-[#bff0b3] text-[#41553c]" : "bg-[#45a52e] text-white"} hover:bg-[#3faa24] font-bold text-lg`}
                     >
                          {loginSignup == "login" ? "Account Already Created" : "Create New Account"}
                     </button>

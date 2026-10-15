@@ -6,11 +6,12 @@ import PlayChessPanal from "../components/PlayChessPanal";
 import axios from "axios";
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
-import { reLoginAtom } from "../utils/store/ChessAtom";
+import { reLoginAtom, userNameAtom } from "../utils/store/ChessAtom";
 
 function HomePage(){
     const navigate = useNavigate();
     const setRelogin = useSetAtom(reLoginAtom);
+    const setUsername = useSetAtom(userNameAtom);
 
     function handleStartGame(){
         socket.connect();
@@ -19,13 +20,15 @@ function HomePage(){
 
     useEffect(()=>{
         async function authCheck() {
-            await axios.post("http://localhost:3000/auth/login", 
+            await axios.post("http://localhost:3000/auth/login",
                 {},
                 { withCredentials: true }).then((res)=>{
-                        if(res.data.relogin){
-                            setRelogin(res.data.relogin);
+                        if(res.data.success){
+                            setRelogin(false);
+                            setUsername(res.data.username);
                         }
                 }).catch((err)=>{
+                     setRelogin(true);
                      console.log(err);
                 });
         }
