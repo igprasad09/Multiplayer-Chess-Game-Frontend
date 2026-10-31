@@ -24,23 +24,6 @@ function HomePage(){
         navigate("/game")
     }
 
-    useEffect(()=>{
-        async function authCheck() {
-            await axios.post("http://localhost:3000/auth/login",
-                {},
-                { withCredentials: true }).then((res)=>{
-                        if(res.data.success){
-                            setRelogin(false);
-                            setUsername(res.data.username);
-                            setToken(res.data.token);
-                        }
-                }).catch((err)=>{
-                     setRelogin(true);
-                     console.log(err);
-                });
-        }
-        authCheck();
-    },[])
 
     return (<div className="bg-neutral-800 h-screen flex">
           <Toaster/>

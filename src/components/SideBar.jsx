@@ -1,6 +1,7 @@
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
 import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
+import {userIdAtom} from "../utils/store/authAtom";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
@@ -35,8 +36,28 @@ function SideBar(){
     const relogin = useAtomValue(reLoginAtom);
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const setRelogin = useSetAtom(reLoginAtom);
-    const username = useAtomValue(userNameAtom);
+    const [username, setUsername] = useAtom(userNameAtom);
     const setToken = useSetAtom(tokenAtom);
+    const setUserId = useSetAtom(userIdAtom);
+
+    useEffect(()=>{
+        async function authCheck() {
+            await axios.post("http://localhost:3000/auth/login",
+                {},
+                { withCredentials: true }).then((res)=>{
+                        if(res.data.success){
+                            setRelogin(false);
+                            setUsername(res.data.username);
+                            setToken(res.data.token);
+                            setUserId(res.data.user.userId)
+                        }
+                }).catch((err)=>{
+                     setRelogin(true);
+                     console.log(err);
+                });
+        }
+        authCheck();
+    },[])
 
     async function handleLogout(){
         try{
