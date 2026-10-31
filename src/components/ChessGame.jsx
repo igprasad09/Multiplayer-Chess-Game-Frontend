@@ -169,8 +169,27 @@ function ChessGame(){
     }
 
     return (
-        <div className="size-150">
+        <div className="w-[min(37.5rem,calc(100vh-9rem))]">
+           <div className="flex mb-3 mt-auto">
+                <div className="bg-neutral-600 rounded-sm h-12 w-12 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="text-neutral-400 h-9 w-9">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8z"/>
+                    </svg>
+                </div>
+                <p className="text-white font-semibold ml-5 flex items-start gap-2">
+                    {opponentUsername}<img src="https://flagcdn.com/24x18/in.png" className="mt-1" alt="India" />
+                </p>
+            </div>
             <Chessboard options={chessboardOptions}/>
+            <div className="flex mt-2">
+                <div className="bg-neutral-300 rounded-sm h-12 w-12 flex items-center justify-center">
+                    <img src="/public/images/username.svg" className=" rounded-sm" alt="" />
+                </div>
+                <p className="text-white font-semibold ml-5 flex items-start gap-2">
+                    {username}<img src="https://flagcdn.com/24x18/in.png" className="mt-1" alt="India" />
+                </p>
+            </div>
         </div>
     )
 }

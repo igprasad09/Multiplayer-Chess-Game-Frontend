@@ -1,6 +1,7 @@
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
 import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
+import {userIdAtom} from "../utils/store/authAtom";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
@@ -35,8 +36,28 @@ function SideBar(){
     const relogin = useAtomValue(reLoginAtom);
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const setRelogin = useSetAtom(reLoginAtom);
-    const username = useAtomValue(userNameAtom);
+    const [username, setUsername] = useAtom(userNameAtom);
     const setToken = useSetAtom(tokenAtom);
+    const setUserId = useSetAtom(userIdAtom);
+
+    useEffect(()=>{
+        async function authCheck() {
+            await axios.post("http://localhost:3000/auth/login",
+                {},
+                { withCredentials: true }).then((res)=>{
+                        if(res.data.success){
+                            setRelogin(false);
+                            setUsername(res.data.username);
+                            setToken(res.data.token);
+                            setUserId(res.data.user.userId)
+                        }
+                }).catch((err)=>{
+                     setRelogin(true);
+                     console.log(err);
+                });
+        }
+        authCheck();
+    },[])
 
     async function handleLogout(){
         try{
@@ -57,18 +78,18 @@ function SideBar(){
         }
     }
 
-    return (<div className="h-screen bg-neutral-900 w-90 flex flex-col justify-between">
+    return (<div className="h-screen bg-neutral-900 w-90 shrink-0 flex flex-col justify-between">
          <Toaster/>
          <div className="">
              <div className="flex justify-center"><img className="h-13 mt-3" src="/public/images/chesslogo.png" alt="#" /></div>
             {/* play */}
-            <span className="flex justify-center p-2 rounded-2xl m-5 cursor-pointer hover:bg-neutral-600 transition duration-200 ease-in-out bg-neutral-700 items-center gap-3 mt-7">
+            <span onClick={()=> navigate("/home")} className="flex justify-center p-2 rounded-2xl m-5 cursor-pointer hover:bg-neutral-600 transition duration-200 ease-in-out bg-neutral-700 items-center gap-3 mt-7">
               <img className="h-10 -ml-15" src="/public/images/play-white.svg" alt="" />
               <h1 className="text-2xl text-white font-bold mt-2">Play</h1>
             </span>
             
             {/* Friends */}
-            <span className="flex justify-center p-2 rounded-2xl m-5 cursor-pointer hover:bg-neutral-600 transition duration-200 ease-in-out bg-neutral-700 items-center gap-3 mt-7">
+            <span onClick={()=> navigate("/friends")} className="flex justify-center p-2 rounded-2xl m-5 cursor-pointer hover:bg-neutral-600 transition duration-200 ease-in-out bg-neutral-700 items-center gap-3 mt-7">
               <img className="h-10 -ml-15" src="/public/images/friends.svg" alt="" />
               <h1 className="text-2xl text-white font-bold mt-2">Friends</h1>
             </span>

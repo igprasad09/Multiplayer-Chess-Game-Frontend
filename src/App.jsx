@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import { useEffect } from "react";
 import socket from "./services/socket";
 import SignupLogin from "./pages/SignupLogin";
+import FriendsPage from "./pages/FriendsPage";
 
 function App() {
   const location = useLocation();
@@ -17,6 +18,7 @@ function App() {
            <Route path="/home" element={<HomePage />} />
            <Route path="/signup" element={<SignupLogin />} />
            <Route path="/login" element={<SignupLogin />} />
+           <Route path="/friends" element={<FriendsPage/>} />
      </Routes>
   )
 }

@@ -7,6 +7,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
+import toast, { Toaster } from "react-hot-toast";
 
 function HomePage(){
     const navigate = useNavigate();
@@ -15,30 +16,17 @@ function HomePage(){
     const [token, setToken] = useAtom(tokenAtom);
 
     function handleStartGame(){
+        if(!token) {return toast('Login is Required!', {
+            icon: '👏',
+            });}
         socket.auth = { token };
         socket.connect();
         navigate("/game")
     }
 
-    useEffect(()=>{
-        async function authCheck() {
-            await axios.post("http://localhost:3000/auth/login",
-                {},
-                { withCredentials: true }).then((res)=>{
-                        if(res.data.success){
-                            setRelogin(false);
-                            setUsername(res.data.username);
-                            setToken(res.data.token);
-                        }
-                }).catch((err)=>{
-                     setRelogin(true);
-                     console.log(err);
-                });
-        }
-        authCheck();
-    },[])
 
     return (<div className="bg-neutral-800 h-screen flex">
+          <Toaster/>
           <SideBar />
           <ChessBoardView/>
           <PlayChessPanal onPlayOnline={handleStartGame} />
