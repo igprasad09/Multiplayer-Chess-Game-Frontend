@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useAtomValue } from "jotai";
@@ -11,17 +11,26 @@ function FriendsComponent(){
     const [friends, setFriends] = useState([]);
     const [totalUserCount, setTotalUserCount] = useState(0);
     const username = useAtomValue(userNameAtom);
+    const [searchValue, setSearchValue] = useState("");
     
     async function featchAllUsers() {
         try {
             const res = await axios.get(
                 "http://localhost:3000/api/allusers",
                 {
-                    params: { page }
+                    params: { 
+                        page,
+                        username: searchValue.trim() || undefined
+                     }
                 }
             );
 
-            setUsers((prev)=> [...prev, ...res.data.users]);
+           if(page == 1){
+              setUsers(res.data.users);
+           }else{
+              setUsers(prev => [...prev, ...res.data.users]);
+           }
+
             setTotalUserCount(res.data.totalusers);
             console.log(res.data.users)
             return res.data;
@@ -35,22 +44,25 @@ function FriendsComponent(){
          console.log(element)
     }
 
-    useEffect(()=>{
-        async function feathusers() {
-            if(friendsFilter == "allFriends"){
-                await toast.promise(featchAllUsers(), {
-                    loading: "Feating Users",
-                    success: (data)=> data.message
-                })
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (friendsFilter === "allFriends") {
+                featchAllUsers();
             }
-        }
-        feathusers();
-    },[friendsFilter, page]);
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [friendsFilter, page, searchValue]);
+
+    const handleSearch = (e) => {
+        setSearchValue(e.target.value);
+        setPage(1);
+    };
 
     return (
         <div className=" flex-1 min-w-0">
            <div className="mt-10 flex justify-center">
-             <input className=" placeholder:text-white border-2 text-2xl text-white border-gray-400 rounded-sm px-40 py-2" type="text" placeholder="Search by username"/>
+             <input value={searchValue} onChange={handleSearch} className=" placeholder:text-white border-2 text-2xl text-white border-gray-400 rounded-sm px-40 py-2" type="text" placeholder="Search by username"/>
              <select
                 value={friendsFilter}
                 onChange={(e)=>setFriendsFilter(e.target.value)}
@@ -85,11 +97,14 @@ function FriendsComponent(){
                     </div>
                  ) }
            </div>
-           {users.length == totalUserCount && users.length != 0 ? (
-                <button onClick={()=> toast("No Users")} className="bg-gray-500 text-2xl text-amber-50 px-7 rounded-sm cursor-pointer">Load More</button>
-           ) : (
-            <button onClick={()=> setPage((prev)=>prev+1) } className="bg-red-500 text-2xl text-amber-50 px-7 rounded-sm cursor-pointer hover:bg-red-600">Load More</button>
-           )}
+            {users.length < totalUserCount && (
+                <button
+                    onClick={() => setPage(prev => prev + 1)}
+                    className="bg-red-500 text-2xl text-amber-50 px-7 rounded-sm cursor-pointer hover:bg-red-600"
+                >
+                    Load More
+                </button>
+            )}
         </div>
     )
 }
