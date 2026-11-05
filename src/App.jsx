@@ -7,10 +7,20 @@ import SignupLogin from "./pages/SignupLogin";
 import FriendsPage from "./pages/FriendsPage";
 
 function App() {
-  const location = useLocation();
+
   useEffect(()=>{
-       if(location.pathname == "/home") { socket.disconnect() }
-  }, [location.pathname])
+     const token = localStorage.getItem("token");
+
+     if(token){
+        socket.auth =  { token };
+        socket.connect();
+     }
+
+     return () =>{
+        socket.disconnect();
+     }
+  }, []);
+
   return (
      <Routes>
            <Route path="/" element={<Navigate to="/home" replace />} />
