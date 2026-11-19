@@ -1,5 +1,5 @@
 import {Chessboard, defaultPieces} from "react-chessboard";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { useAtom, useAtomValue } from "jotai";
 import { fenAtom, gameColorAtom, opponentUsernameAtom, resultAtom, turnAtom, userNameAtom } from "../utils/store/ChessAtom";
@@ -17,45 +17,51 @@ function ChessGame(){
       const [opponentUsername, setOpponentUsername] = useAtom(opponentUsernameAtom);
       const username = useAtomValue(userNameAtom);
       const [gameStatus, setGameStatus] = useState("waiting");
+      const colorRef = useRef(color);
+      useEffect(()=> { colorRef.current = color; }, [color]);
 
       const chess = useMemo(()=> new Chess(fen), [fen]);
-
-      const checkedKingSquare = useMemo(() => {
-        if (!chess.inCheck()) return null;
-        const sideInCheck = chess.turn();
-        for (const row of chess.board()) {
-          for (const sq of row) {
-            if (sq && sq.type === "k" && sq.color === sideInCheck) {
-              return sq.square;
-            }
-          }
-        }
-        return null;
-      }, [chess]);
-
+      
+      //all the socket connections
       useEffect(() => {
-          socket.on("waitingForOpponent", ()=> setGameStatus("waiting"));
-          socket.on("matched", ({gameId, color, opponentUsername})=>{
-              setColor(color);
-              setOpponentUsername(opponentUsername);
-              setGameStatus("playing");
-              console.log("Me:", username, "| Opponent:", opponentUsername);
-          });
-          socket.on("opponentLeft", () => setGameStatus("opponent-left"));
-          socket.on("gameState", (data) => {
-               setFen(data.fen);
-               setTurn(data.turn);
-               if(data.isDraw) {setResult("draw")}
-               if(data.isGameOver){
-                   setResult(data.winner ? (data.winner === color ? "win" : "loss") : "draw");
-                  console.log(result);
-               }else{
-                   setResult(false);
-               }
-          });
-          return () => socket.off("waitingForOpponent").off("matched").off("opponentLeft").off("gameState");
-      },[color]);
+          const onWaiting = () => setGameStatus("waiting");
 
+          const onMatched = ({ gameId, color, opponentUsername }) => {
+            setColor(color);
+            setOpponentUsername(opponentUsername);
+            setGameStatus("playing");
+          };
+
+          const onOpponentLeft = () => setGameStatus("opponent-left");
+
+          const onGameState = (data) => {
+            setFen(data.fen);
+            setTurn(data.turn);
+            if (data.isGameOver) {
+              setResult(
+                data.winner ? (data.winner === colorRef.current ? "win" : "loss") : "draw"
+              );
+            } else {
+              setResult(false);
+            }
+          };
+
+          socket.on("waitingForOpponent", onWaiting);
+          socket.on("matched", onMatched);
+          socket.on("opponentLeft", onOpponentLeft);
+          socket.on("gameState", onGameState);
+
+          socket.emit("findMatch");
+
+          return () => {
+            socket.off("waitingForOpponent", onWaiting);
+            socket.off("matched", onMatched);
+            socket.off("opponentLeft", onOpponentLeft);
+            socket.off("gameState", onGameState);
+          };
+        }, []);
+      
+      //on picecedrop send that move to the opponent using the sockets
       function onPieceDrop({ sourceSquare, targetSquare }){
           socket.emit("gameMove",{
             from: sourceSquare, 
@@ -79,12 +85,7 @@ function ChessGame(){
         })
       }
 
-      useEffect(()=>{
-         socket.on("connect", ()=>{
-            console.log("My socket id:", socket.id);
-         })
-      },[]);
-
+      //show that legal moves where ever that pice can be place
       function getMoveOptions(square){
           const moves = chess.moves({square, verbose: true});
           if(moves.length === 0){
@@ -103,7 +104,7 @@ function ChessGame(){
           setLegalMoves(newSquareStyles);
           setSelectedSquare(square);
       }
-
+      // client side check that is this move is legal
       function onSquareClick({square, piece}){
          if(selectedSquare && legalMoves[square]){
             onPieceDrop({sourceSquare: selectedSquare, targetSquare: square});
@@ -118,7 +119,20 @@ function ChessGame(){
             setLegalMoves([]);
          }
       }
-
+      // checked king square
+      const checkedKingSquare = useMemo(() => {
+        if (!chess.inCheck()) return null;
+        const sideInCheck = chess.turn();
+        for (const row of chess.board()) {
+          for (const sq of row) {
+            if (sq && sq.type === "k" && sq.color === sideInCheck) {
+              return sq.square;
+            }
+          }
+        }
+        return null;
+      }, [chess]);
+      // after check kings squire animation
       const squareStyles = {
         ...legalMoves,
         ...(checkedKingSquare && {
@@ -126,6 +140,7 @@ function ChessGame(){
         }),
       };
 
+      // after check king shake
       const pieces = useMemo(() => {
         return Object.fromEntries(
           Object.entries(defaultPieces).map(([pieceCode, renderPiece]) => [

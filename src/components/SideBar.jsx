@@ -5,6 +5,7 @@ import {userIdAtom} from "../utils/store/authAtom";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
+import { disconnectSocket } from "../services/socket";
 
 const MailIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
@@ -65,6 +66,7 @@ function SideBar(){
                 axios.post("http://localhost:3000/auth/logout",{},{withCredentials: true})
                 .then((res)=>{
                     setRelogin(res.data.relogin);
+                    disconnectSocket();
                     setToken(null);
                 }),
                 {

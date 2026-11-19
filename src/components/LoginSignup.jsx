@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useSetAtom } from "jotai";
 import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
+import { connectSocket, disconnectSocket } from "../services/socket";
 
 const REMEMBER_KEY = "chess_remember_me";
 const USERNAME_KEY = "chess_remembered_username";
@@ -50,9 +51,8 @@ function LoginSignup(){
     useEffect(()=>{
          const res = location.pathname == "/login" ? "login" : "signup";
          setLoginSignup(res);
-         console.log("locaiton: ",location.pathname)
     },[location])
-    
+
     async function handleAuth(){
         if(!username || !password){return toast.error("Enter Username and Password")}
 
@@ -68,6 +68,11 @@ function LoginSignup(){
             setUsernameinatom(res.data.username);
             setToken(res.data.token);
             setRelogin(false);
+
+            // cookie is saved now: drop any old connection, then connect with the new cookie
+            disconnectSocket();
+            connectSocket();
+
             navigate("/home");
             return res.data;
         }
@@ -110,69 +115,72 @@ function LoginSignup(){
 
     return(
         <div className="bg-zinc-900 transition duration-300 ease-in-out rounded-md mt-9 grid p-5 content-start w-100 gap-2">
-                   <Toaster position="top-right" />
-                    <div className="relative m-2">
-                        <span className="absolute inset-y-0 left-3 flex items-center text-zinc-400">
-                            <UserIcon />
-                        </span>
-                        <input
-                            className={`${INPUT_CLASSES} pl-10 pr-3`}
-                            type="text"
-                            placeholder="Username"
-                            required
-                            value={username}
-                            onChange={(e)=>setUsername(e.target.value.trim())}
-                        />
-                    </div>
+            <Toaster position="top-right" />
+            <div className="relative m-2">
+                <span className="absolute inset-y-0 left-3 flex items-center text-zinc-400">
+                    <UserIcon />
+                </span>
+                <input
+                    className={`${INPUT_CLASSES} pl-10 pr-3`}
+                    type="text"
+                    placeholder="Username"
+                    required
+                    value={username}
+                    onChange={(e)=>setUsername(e.target.value.trim())}
+                />
+            </div>
 
-                    <div className="relative m-2">
-                        <span className="absolute inset-y-0 left-3 flex items-center text-zinc-400">
-                            <LockIcon />
-                        </span>
-                        <input
-                            className={`${INPUT_CLASSES} pl-10 pr-10`}
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Password"
-                            required
-                            value={password}
-                            onChange={(e)=> setPassword(e.target.value.trim())}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword((prev) => !prev)}
-                            aria-label={showPassword ? "Hide password" : "Show password"}
-                            className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-200"
-                        >
-                            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                        </button>
-                    </div>
+            <div className="relative m-2">
+                <span className="absolute inset-y-0 left-3 flex items-center text-zinc-400">
+                    <LockIcon />
+                </span>
+                <input
+                    className={`${INPUT_CLASSES} pl-10 pr-10`}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    required
+                    value={password}
+                    onChange={(e)=> setPassword(e.target.value.trim())}
+                />
+                <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-200"
+                >
+                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+            </div>
 
-                    <div className="flex items-center justify-between m-2 text-sm">
-                        <label className="flex items-center gap-2 text-zinc-300 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={rememberMe}
-                                onChange={handleRememberMeChange}
-                                className="h-4 w-4 accent-green-600 cursor-pointer"
-                            />
-                            Remember me
-                        </label>
-                        <p onClick={ ()=>{ 
-                                        if(location.pathname == "/login"){ return navigate("/signup") }
-                                        if(location.pathname == "/signup") {return navigate("/login")}
-                                   } } className="text-zinc-300 cursor-pointer underline hover:text-white">
-                            {loginSignup == "login" ? "Create New Account" : "Account Already Created"}
-                        </p>
-                    </div>
+            <div className="flex items-center justify-between m-2 text-sm">
+                <label className="flex items-center gap-2 text-zinc-300 cursor-pointer select-none">
+                    <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={handleRememberMeChange}
+                        className="h-4 w-4 accent-green-600 cursor-pointer"
+                    />
+                    Remember me
+                </label>
+                <p
+                    onClick={() => {
+                        if(location.pathname == "/login"){ return navigate("/signup") }
+                        if(location.pathname == "/signup"){ return navigate("/login") }
+                    }}
+                    className="text-zinc-300 cursor-pointer underline hover:text-white"
+                >
+                    {loginSignup == "login" ? "Create New Account" : "Account Already Created"}
+                </p>
+            </div>
 
-                    <button
-                        type="button"
-                        onClick={handleAuth}
-                        className={`m-2 transition-colors duration-300 ease-in-out h-12 cursor-pointer rounded-sm ${!username || !password ? "bg-[#bff0b3] text-[#41553c]" : "bg-[#45a52e] text-white"} hover:bg-[#3faa24] font-bold text-lg`}
-                    >
-                         {loginSignup == "login" ? "Account Already Created" : "Create New Account"}
-                    </button>
-                </div>
+            <button
+                type="button"
+                onClick={handleAuth}
+                className={`m-2 transition-colors duration-300 ease-in-out h-12 cursor-pointer rounded-sm ${!username || !password ? "bg-[#bff0b3] text-[#41553c]" : "bg-[#45a52e] text-white"} hover:bg-[#3faa24] font-bold text-lg`}
+            >
+                {loginSignup == "login" ? "Login" : "Create New Account"}
+            </button>
+        </div>
     )
 }
 

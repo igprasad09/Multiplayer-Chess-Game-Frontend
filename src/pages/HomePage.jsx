@@ -19,11 +19,8 @@ function HomePage(){
         if(!token) {return toast('Login is Required!', {
             icon: '👏',
             });}
-        socket.auth = { token };
-        socket.connect();
         navigate("/game")
     }
-
 
     return (<div className="bg-neutral-800 h-screen flex">
           <Toaster/>
