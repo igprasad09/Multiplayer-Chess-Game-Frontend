@@ -1,36 +1,50 @@
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useSetAtom } from "jotai";
 import GamePage from "./pages/GamePage";
 import HomePage from "./pages/HomePage";
-import { useEffect } from "react";
-import socket from "./services/socket";
 import SignupLogin from "./pages/SignupLogin";
 import FriendsPage from "./pages/FriendsPage";
+import socket, { connectSocket } from "./services/socket";
+import { userNameAtom } from "./utils/store/ChessAtom";
 
 function App() {
+  const setUsername = useSetAtom(userNameAtom);
 
-  useEffect(()=>{
-     const token = localStorage.getItem("token");
+  useEffect(() => {
+    const onConnect = () => console.log("Socket connected:", socket.id);
+    const onError = (err) => console.log("Socket error:", err.message);
 
-     if(token){
-        socket.auth =  { token };
-        socket.connect();
-     }
+    socket.on("connect", onConnect);
+    socket.on("connect_error", onError);
 
-     return () =>{
-        socket.disconnect();
-     }
+    // ask the server if the cookie is valid; connect only if logged in
+    fetch("http://localhost:3000/auth/me", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.success) {
+          setUsername(data.username);
+          connectSocket();
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("connect_error", onError);
+    };
   }, []);
 
   return (
-     <Routes>
-           <Route path="/" element={<Navigate to="/home" replace />} />
-           <Route path="/game" element={<GamePage />} />
-           <Route path="/home" element={<HomePage />} />
-           <Route path="/signup" element={<SignupLogin />} />
-           <Route path="/login" element={<SignupLogin />} />
-           <Route path="/friends" element={<FriendsPage/>} />
-     </Routes>
-  )
+    <Routes>
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/game" element={<GamePage />} />
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/signup" element={<SignupLogin />} />
+      <Route path="/login" element={<SignupLogin />} />
+      <Route path="/friends" element={<FriendsPage />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
