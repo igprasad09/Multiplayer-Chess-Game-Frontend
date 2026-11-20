@@ -11,35 +11,41 @@ import { useState } from "react";
 import { onlineUsersAtom, userIdAtom } from "./utils/store/authAtom";
 import toast from "react-hot-toast";
 import { friendsDataAtom, refreshFriendsAtom } from "./utils/store/friendsAtom";
+import { MessagePage } from "./pages/MessagePage";
+import { showMessageToast } from "./utils/store/messageToast";
+import { refreshChatsAtom } from "./utils/store/messageAtom";
 
 function App() {
-  const setUsername = useSetAtom(userNameAtom);
+  const [username, setUsername] = useAtom(userNameAtom);
   const [onlineUsers, setOnlineUsers] = useAtom(onlineUsersAtom);
   const [friendsData, setFriensData] = useAtom(friendsDataAtom);
   const userId = useAtomValue(userIdAtom);
   const [refreshFriends, setRefreshFriends] = useAtom(refreshFriendsAtom);
+  const setRefreshChat = useSetAtom(refreshChatsAtom);
 
-    useEffect(()=>{
-        console.log(onlineUsers);
-    },[onlineUsers])
-
+  useEffect(() => {
+    console.log(onlineUsers);
+  }, [onlineUsers]);
 
   useEffect(() => {
     const onConnect = () => console.log("Socket connected:", socket.id);
     const onError = (err) => console.log("Socket error:", err.message);
-    const onRecevedFriendRequiest = (res) => toast(`${res.message}!`,{icon: '🙌',style: {borderRadius: '10px',},});;
+    const onRecevedFriendRequiest = (res) =>
+      toast(`${res.message}!`, { icon: "🙌", style: { borderRadius: "10px" } });
     const onFrendRequestAccept = (res) => {
       toast.success(res.message);
-      setRefreshFriends((prev)=> prev + 1);
-    }
+      setRefreshFriends((prev) => prev + 1);
+    };
+    const onGotMessage = (res) => { showMessageToast(username, res.message); setRefreshChat((prev)=> prev + 1) };
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onError);
-    socket.on("onlineUsersUpdate", (users)=>{
-                  setOnlineUsers(new Set(users));
-              });
+    socket.on("onlineUsersUpdate", (users) => {
+      setOnlineUsers(new Set(users));
+    });
     socket.on("newFriendRequest", onRecevedFriendRequiest);
-    socket.on("friendRequestAccepted", onFrendRequestAccept)
+    socket.on("friendRequestAccepted", onFrendRequestAccept);
+    socket.on("gotMessage", onGotMessage);
 
     // ask the server if the cookie is valid; connect only if logged in
     fetch("http://localhost:3000/auth/me", { credentials: "include" })
@@ -58,31 +64,32 @@ function App() {
       socket.off("onlineUsersUpdate");
       socket.off("newFriendRequest", onRecevedFriendRequiest);
       socket.off("friendRequestAccepted", onFrendRequestAccept);
+      socket.off("gotMessage", onGotMessage);
     };
   }, []);
 
-     useEffect(() => {
-        if (!userId) return;
+  useEffect(() => {
+    if (!userId) return;
 
-           const loadFriendsData = () => {
-               socket.emit("getFriendsData", { userId }, (response) => {
-                    if (response.success) {
-                        setFriensData({
-                        friends: response.friends,
-                        requests: response.requests,
-                        rejected: response.rejected,
-                        });
-                    }
-                    });
-                };
+    const loadFriendsData = () => {
+      socket.emit("getFriendsData", { userId }, (response) => {
+        if (response.success) {
+          setFriensData({
+            friends: response.friends,
+            requests: response.requests,
+            rejected: response.rejected,
+          });
+        }
+      });
+    };
 
-                loadFriendsData();                                // initial load
-                socket.on("newFriendRequest", loadFriendsData);   // live update
+    loadFriendsData(); // initial load
+    socket.on("newFriendRequest", loadFriendsData); // live update
 
-                return () => {
-                    socket.off("newFriendRequest", loadFriendsData);
-                };
-        }, [userId, setFriensData, refreshFriends]);
+    return () => {
+      socket.off("newFriendRequest", loadFriendsData);
+    };
+  }, [userId, setFriensData, refreshFriends]);
 
   return (
     <Routes>
@@ -92,6 +99,8 @@ function App() {
       <Route path="/signup" element={<SignupLogin />} />
       <Route path="/login" element={<SignupLogin />} />
       <Route path="/friends" element={<FriendsPage />} />
+      <Route path="/messages" element={<MessagePage />} />
+      <Route path="/messages/:userId" element={<MessagePage />} />
     </Routes>
   );
 }
