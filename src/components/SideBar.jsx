@@ -5,7 +5,8 @@ import {userIdAtom} from "../utils/store/authAtom";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
-import { disconnectSocket } from "../services/socket";
+import socket, { disconnectSocket } from "../services/socket";
+import { friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
 
 const MailIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
@@ -40,6 +41,8 @@ function SideBar(){
     const [username, setUsername] = useAtom(userNameAtom);
     const setToken = useSetAtom(tokenAtom);
     const setUserId = useSetAtom(userIdAtom);
+    const friendsData = useAtomValue(friendsDataAtom);
+    const setFriendsFilter = useSetAtom(friendFilterAtom);
 
     useEffect(()=>{
         async function authCheck() {
@@ -91,10 +94,19 @@ function SideBar(){
             </span>
             
             {/* Friends */}
-            <span onClick={()=> navigate("/friends")} className="flex justify-center p-2 rounded-2xl m-5 cursor-pointer hover:bg-neutral-600 transition duration-200 ease-in-out bg-neutral-700 items-center gap-3 mt-7">
-              <img className="h-10 -ml-15" src="/public/images/friends.svg" alt="" />
-              <h1 className="text-2xl text-white font-bold mt-2">Friends</h1>
-            </span>
+            <span
+                onClick={() =>{ navigate("/friends"); setFriendsFilter("myFriends")}}
+                className="relative flex justify-center p-2 rounded-2xl m-5 cursor-pointer hover:bg-neutral-600 transition duration-200 ease-in-out bg-neutral-700 items-center gap-3 mt-7"
+                >
+                <img className="h-10 -ml-15" src="/public/images/friends.svg" alt="" />
+                <h1 className="text-2xl text-white font-bold mt-2">Friends</h1>
+
+                {friendsData.requests.length > 0 && (
+                    <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
+                    {friendsData.requests.length > 9 ? "9+" : friendsData.requests.length}
+                    </span>
+                )}
+              </span>
          </div>
 
         <div className="mb-8">
