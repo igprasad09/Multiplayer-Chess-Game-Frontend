@@ -9,3 +9,4 @@ export const userNameAtom = atom("");
 export const opponentUsernameAtom = atom("");
 export const reLoginAtom = atom(null);
 export const tokenAtom = atom(null);
+export const playingPlayersListAtom = atom(new Set());

@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import socket, { disconnectSocket } from "../services/socket";
 import { allFriendsSetAtom, friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
+import { refreshChatsAtom, unreadMessagesCountAtom } from "../utils/store/messageAtom";
 
 const MailIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
@@ -44,7 +45,9 @@ function SideBar(){
     const friendsData = useAtomValue(friendsDataAtom);
     const setFriendsFilter = useSetAtom(friendFilterAtom);
     const allFriends = useAtomValue(friendsDataAtom);
-    const setAllfriendsSet = useSetAtom(allFriendsSetAtom); 
+    const setAllfriendsSet = useSetAtom(allFriendsSetAtom);
+    const [unreadMsgCounts, setUnreadMsgCounts] = useAtom(unreadMessagesCountAtom); 
+    const refreshChats = useAtomValue(refreshChatsAtom);
 
     useEffect(()=>{
         const newFriendSet = new Set(
@@ -91,6 +94,16 @@ function SideBar(){
             console.log(err)
         }
     }
+
+    const unreadUsersCount = Object.values(unreadMsgCounts).filter((count) => count > 0).length;
+
+    useEffect(() => {
+    socket.emit("unreadCounts", {}, (response) => {
+        if (response.success) {
+          setUnreadMsgCounts(response.counts);
+        }
+    });
+    }, [refreshChats]);
 
     return (<div className="h-screen bg-neutral-900 w-90 shrink-0 flex flex-col justify-between">
          <Toaster/>
@@ -139,9 +152,17 @@ function SideBar(){
                     </div>
 
                     <div className="flex items-center justify-evenly px-1 text-neutral-300">
-                        <button onClick={()=> {navigate("/messages")}} className="hover:text-white cursor-pointer transition duration-200 ease-in-out">
+                        <button
+                            onClick={() => { navigate("/messages"); }}
+                            className="relative hover:text-white cursor-pointer transition duration-200 ease-in-out"
+                            >
                             <MailIcon />
-                        </button>
+                            {unreadUsersCount > 0 && (
+                                <span className="absolute -top-1 -right-2 bg-green-600 text-white text-xs px-1.5 rounded-full">
+                                {unreadUsersCount}
+                                </span>
+                            )}
+                            </button>
                         <button className="hover:text-white cursor-pointer transition duration-200 ease-in-out">
                             <BellIcon />
                         </button>
