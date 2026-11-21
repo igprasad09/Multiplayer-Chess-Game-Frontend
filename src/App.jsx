@@ -24,10 +24,6 @@ function App() {
   const setRefreshChat = useSetAtom(refreshChatsAtom);
 
   useEffect(() => {
-    console.log(onlineUsers);
-  }, [onlineUsers]);
-
-  useEffect(() => {
     const onConnect = () => console.log("Socket connected:", socket.id);
     const onError = (err) => console.log("Socket error:", err.message);
     const onRecevedFriendRequiest = (res) =>
@@ -36,7 +32,7 @@ function App() {
       toast.success(res.message);
       setRefreshFriends((prev) => prev + 1);
     };
-    const onGotMessage = (res) => { showMessageToast(username, res.message); setRefreshChat((prev)=> prev + 1) };
+    const onGotMessage = (res) => { showMessageToast(res.username, res.message); console.log(res);setRefreshChat((prev)=> prev + 1) };
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onError);

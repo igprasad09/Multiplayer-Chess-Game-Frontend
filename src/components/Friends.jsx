@@ -4,12 +4,14 @@ import { friendsDataAtom, refreshFriendsAtom } from "../utils/store/friendsAtom"
 import { onlineUsersAtom } from "../utils/store/authAtom";
 import socket from "../services/socket";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export function Friends() {
   const [active, setActive] = useState("Friends");
   const onlineUsers = useAtomValue(onlineUsersAtom);
   const friendsData = useAtomValue(friendsDataAtom);
   const setRefreshFriends = useSetAtom(refreshFriendsAtom);
+  const navigate = useNavigate();
 
   const friends = friendsData?.friends || [];
   const requests = friendsData?.requests || [];
@@ -110,6 +112,7 @@ export function Friends() {
                      <button
                         className="flex cursor-pointer items-center justify-center rounded px-3 py-1 font-bold hover:bg-gray-700 transition"
                         aria-label="Message"
+                        onClick={()=>navigate(`/messages/${user.userId}`)}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
