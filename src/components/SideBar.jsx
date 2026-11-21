@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import socket, { disconnectSocket } from "../services/socket";
-import { friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
+import { allFriendsSetAtom, friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
 
 const MailIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
@@ -43,6 +43,15 @@ function SideBar(){
     const setUserId = useSetAtom(userIdAtom);
     const friendsData = useAtomValue(friendsDataAtom);
     const setFriendsFilter = useSetAtom(friendFilterAtom);
+    const allFriends = useAtomValue(friendsDataAtom);
+    const setAllfriendsSet = useSetAtom(allFriendsSetAtom); 
+
+    useEffect(()=>{
+        const newFriendSet = new Set(
+            allFriends.friends.map((friend) => friend.userId)
+        );
+        setAllfriendsSet(newFriendSet);
+    }, [allFriends.friends, setAllfriendsSet]);
 
     useEffect(()=>{
         async function authCheck() {
@@ -130,7 +139,7 @@ function SideBar(){
                     </div>
 
                     <div className="flex items-center justify-evenly px-1 text-neutral-300">
-                        <button className="hover:text-white cursor-pointer transition duration-200 ease-in-out">
+                        <button onClick={()=> {navigate("/messages")}} className="hover:text-white cursor-pointer transition duration-200 ease-in-out">
                             <MailIcon />
                         </button>
                         <button className="hover:text-white cursor-pointer transition duration-200 ease-in-out">

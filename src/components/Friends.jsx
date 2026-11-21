@@ -102,6 +102,31 @@ export function Friends() {
                     </button>
                   </div>
                 )}
+
+                {active === "Friends" && (
+                  <div className="flex gap-2">
+
+                      {/* message */}
+                     <button
+                        className="flex cursor-pointer items-center justify-center rounded px-3 py-1 font-bold hover:bg-gray-700 transition"
+                        aria-label="Message"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-7 w-7"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 3C6.477 3 2 6.582 2 11c0 2.16 1.07 4.1 2.8 5.46L4 21l4.2-1.4A12.3 12.3 0 0 0 12 20c5.523 0 10-3.582 10-8s-4.477-9-10-9Zm-4 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
+                        </svg>
+                      </button>
+
+                      {/* challenge */}
+                      <button className="rounded bg-green-600 px-3 py-1 font-bold hover:bg-green-700">
+                        Challenge
+                      </button>
+                    </div>
+                )}
               </li>
             ))}
           </ul>

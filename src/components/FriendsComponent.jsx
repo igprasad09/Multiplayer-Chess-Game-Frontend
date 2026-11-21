@@ -6,7 +6,7 @@ import { userNameAtom } from "../utils/store/ChessAtom";
 import { onlineUsersAtom, userIdAtom } from "../utils/store/authAtom";
 import socket from "../services/socket";
 import { Friends } from "./Friends";
-import { friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
+import { allFriendsSetAtom, friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
 
 
 function FriendsComponent(){
@@ -19,10 +19,14 @@ function FriendsComponent(){
     const [searchValue, setSearchValue] = useState("");
     const onlineUsersList = useAtomValue(onlineUsersAtom);
     const allFriends = useAtomValue(friendsDataAtom);
-   
-    const friendsSet = new Set(
-        allFriends.friends.map((friend) => friend.userId)
-    );
+    const [friendsSet, setAllfriendsSet] = useAtom(allFriendsSetAtom); 
+
+    useEffect(()=>{
+        const newFriendSet = new Set(
+            allFriends.friends.map((friend) => friend.userId)
+        );
+        setAllfriendsSet(newFriendSet);
+    }, [allFriends.friends, setAllfriendsSet]);
     
     async function featchAllUsers() {
         try {

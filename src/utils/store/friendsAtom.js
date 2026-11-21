@@ -8,3 +8,4 @@ export const friendsDataAtom = atom({
 
 export const refreshFriendsAtom = atom(0);
 export const friendFilterAtom = atom("myFriends");
+export const allFriendsSetAtom = atom(new Set());
