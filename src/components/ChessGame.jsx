@@ -2,10 +2,10 @@ import {Chessboard, defaultPieces} from "react-chessboard";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { useAtom, useAtomValue } from "jotai";
-import { fenAtom, gameColorAtom, opponentUsernameAtom, resultAtom, turnAtom, userNameAtom } from "../utils/store/ChessAtom";
+import { chessMovesAtom, fenAtom, gameColorAtom, opponentUsernameAtom, resultAtom, turnAtom, userNameAtom } from "../utils/store/ChessAtom";
 import playSound from "../hooks/playSound";
 import socket from "../services/socket";
-
+import toast from "react-hot-toast";
 
 function ChessGame(){
      const [fen, setFen] = useAtom(fenAtom);
@@ -20,6 +20,7 @@ function ChessGame(){
       const [gameStatus, setGameStatus] = useState("waiting");
       const colorRef = useRef(color);
       useEffect(()=> { colorRef.current = color; }, [color]);
+      const [chessMoves, setChessMoves] = useAtom(chessMovesAtom);
 
       const chess = useMemo(()=> new Chess(fen), [fen]);
       
@@ -45,6 +46,7 @@ function ChessGame(){
             } else {
               setResult(false);
             }
+            setChessMoves(data.moves);
           };
 
           socket.on("waitingForOpponent", onWaiting);
@@ -73,15 +75,15 @@ function ChessGame(){
                setFen(data.fen),
                setTurn(data.turn);
                setIsCheckmate(data.isCheckmate);
-                      if(data.check && !data.isCheckmate){
-                          playSound("check");
-                      }else if(data.captured){
-                          playSound("capture")
-                      }else {
-                        playSound("move");
+                if(data.check && !data.isCheckmate){
+                    playSound("check");
+                }else if(data.captured){
+                    playSound("capture")
+                }else {
+                  playSound("move");
                 }
             }else{
-                console.log("Move rejected:", data.reason);
+                alert(`Move rejected: ${data.reason}`);
             }
         })
       }
@@ -205,7 +207,7 @@ function ChessGame(){
                 <p className="text-white font-semibold ml-5 flex items-start gap-2">
                     {username}<img src="https://flagcdn.com/24x18/in.png" className="mt-1" alt="India" />
                 </p>
-            </div>
+            </div> 
         </div>
     )
 }

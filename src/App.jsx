@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import GamePage from "./pages/GamePage";
@@ -22,6 +22,7 @@ function App() {
   const userId = useAtomValue(userIdAtom);
   const [refreshFriends, setRefreshFriends] = useAtom(refreshFriendsAtom);
   const setRefreshChat = useSetAtom(refreshChatsAtom);
+  const location = useLocation();
 
   useEffect(() => {
     const onConnect = () => console.log("Socket connected:", socket.id);
@@ -32,7 +33,7 @@ function App() {
       toast.success(res.message);
       setRefreshFriends((prev) => prev + 1);
     };
-    const onGotMessage = (res) => { showMessageToast(res.username, res.message); console.log(res);setRefreshChat((prev)=> prev + 1) };
+    const onGotMessage = (res) => { if(location.pathname == "/game"){return} ;showMessageToast(res.username, res.message); console.log(res);setRefreshChat((prev)=> prev + 1) };
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onError);

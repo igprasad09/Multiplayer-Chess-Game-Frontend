@@ -5,7 +5,7 @@ import { onlineUsersAtom } from "../utils/store/authAtom";
 import socket from "../services/socket";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { Eye, Gamepad2, Swords } from "lucide-react";
+import { Gamepad2, Swords } from "lucide-react";
 import { playingPlayersListAtom } from "../utils/store/ChessAtom";
 
 export function Friends() {
@@ -129,7 +129,7 @@ export function Friends() {
 
                      
                       {playingPlayerList.has(user.userId) ? (
-                        <button className="flex cursor-pointer items-center gap-2 rounded bg-violet-600 hover:bg-violet-800 px-3 py-1 font-bold text-white hover:bg-neutral-600 transition-colors">
+                        <button className="flex cursor-pointer items-center gap-2 rounded bg-violet-600 hover:bg-violet-800 px-3 py-1 font-bold text-white transition-colors">
                           <Gamepad2 size={16} />
                           Playing
                         </button>
