@@ -5,6 +5,8 @@ import { onlineUsersAtom } from "../utils/store/authAtom";
 import socket from "../services/socket";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { Eye, Gamepad2, Swords } from "lucide-react";
+import { playingPlayersListAtom } from "../utils/store/ChessAtom";
 
 export function Friends() {
   const [active, setActive] = useState("Friends");
@@ -15,6 +17,7 @@ export function Friends() {
 
   const friends = friendsData?.friends || [];
   const requests = friendsData?.requests || [];
+  const playingPlayerList = useAtomValue(playingPlayersListAtom);
 
   const users = active === "Friends" ? friends : requests;
 
@@ -124,10 +127,19 @@ export function Friends() {
                         </svg>
                       </button>
 
-                      {/* challenge */}
-                      <button className="rounded bg-green-600 px-3 py-1 font-bold hover:bg-green-700">
-                        Challenge
-                      </button>
+                     
+                      {playingPlayerList.has(user.userId) ? (
+                        <button className="flex cursor-pointer items-center gap-2 rounded bg-violet-600 hover:bg-violet-800 px-3 py-1 font-bold text-white hover:bg-neutral-600 transition-colors">
+                          <Gamepad2 size={16} />
+                          Playing
+                        </button>
+                      ): (
+                        //challenge
+                         <button className="flex items-center gap-2 rounded cursor-pointer bg-green-600 px-3 py-1 font-bold hover:bg-green-700 transition-colors">
+                            <Swords size={16} />
+                            Challenge
+                          </button>
+                      )}
                     </div>
                 )}
               </li>

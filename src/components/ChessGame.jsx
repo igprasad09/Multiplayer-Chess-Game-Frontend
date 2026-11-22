@@ -6,6 +6,7 @@ import { fenAtom, gameColorAtom, opponentUsernameAtom, resultAtom, turnAtom, use
 import playSound from "../hooks/playSound";
 import socket from "../services/socket";
 
+
 function ChessGame(){
      const [fen, setFen] = useAtom(fenAtom);
       const [turn, setTurn] = useAtom(turnAtom);
