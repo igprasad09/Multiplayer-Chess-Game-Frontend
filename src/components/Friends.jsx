@@ -4,15 +4,20 @@ import { friendsDataAtom, refreshFriendsAtom } from "../utils/store/friendsAtom"
 import { onlineUsersAtom } from "../utils/store/authAtom";
 import socket from "../services/socket";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { Gamepad2, Swords } from "lucide-react";
+import { playingPlayersListAtom } from "../utils/store/ChessAtom";
 
 export function Friends() {
   const [active, setActive] = useState("Friends");
   const onlineUsers = useAtomValue(onlineUsersAtom);
   const friendsData = useAtomValue(friendsDataAtom);
   const setRefreshFriends = useSetAtom(refreshFriendsAtom);
+  const navigate = useNavigate();
 
   const friends = friendsData?.friends || [];
   const requests = friendsData?.requests || [];
+  const playingPlayerList = useAtomValue(playingPlayersListAtom);
 
   const users = active === "Friends" ? friends : requests;
 
@@ -110,6 +115,7 @@ export function Friends() {
                      <button
                         className="flex cursor-pointer items-center justify-center rounded px-3 py-1 font-bold hover:bg-gray-700 transition"
                         aria-label="Message"
+                        onClick={()=>navigate(`/messages/${user.userId}`)}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -121,10 +127,19 @@ export function Friends() {
                         </svg>
                       </button>
 
-                      {/* challenge */}
-                      <button className="rounded bg-green-600 px-3 py-1 font-bold hover:bg-green-700">
-                        Challenge
-                      </button>
+                     
+                      {playingPlayerList.has(user.userId) ? (
+                        <button className="flex cursor-pointer items-center gap-2 rounded bg-violet-600 hover:bg-violet-800 px-3 py-1 font-bold text-white transition-colors">
+                          <Gamepad2 size={16} />
+                          Playing
+                        </button>
+                      ): (
+                        //challenge
+                         <button className="flex items-center gap-2 rounded cursor-pointer bg-green-600 px-3 py-1 font-bold hover:bg-green-700 transition-colors">
+                            <Swords size={16} />
+                            Challenge
+                          </button>
+                      )}
                     </div>
                 )}
               </li>
