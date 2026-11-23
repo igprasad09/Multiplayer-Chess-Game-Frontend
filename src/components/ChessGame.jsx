@@ -1,13 +1,12 @@
 import {Chessboard, defaultPieces} from "react-chessboard";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
-import { useAtom, useAtomValue } from "jotai";
-import { chessMovesAtom, fenAtom, gameColorAtom, opponentUsernameAtom, resultAtom, turnAtom, userNameAtom } from "../utils/store/ChessAtom";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { chessMovesAtom, fenAtom, gameColorAtom, opponentUserIdAtom, opponentUsernameAtom, resultAtom, turnAtom, userNameAtom } from "../utils/store/ChessAtom";
 import playSound from "../hooks/playSound";
 import socket from "../services/socket";
-import toast from "react-hot-toast";
 
-function ChessGame(){
+function ChessGame(){ 
      const [fen, setFen] = useAtom(fenAtom);
       const [turn, setTurn] = useAtom(turnAtom);
       const [selectedSquare, setSelectedSquare] = useState("");
@@ -21,6 +20,7 @@ function ChessGame(){
       const colorRef = useRef(color);
       useEffect(()=> { colorRef.current = color; }, [color]);
       const [chessMoves, setChessMoves] = useAtom(chessMovesAtom);
+      const setOpponentUserId = useSetAtom(opponentUserIdAtom)
 
       const chess = useMemo(()=> new Chess(fen), [fen]);
       
@@ -28,10 +28,11 @@ function ChessGame(){
       useEffect(() => {
           const onWaiting = () => setGameStatus("waiting");
 
-          const onMatched = ({ gameId, color, opponentUsername }) => {
+          const onMatched = ({ gameId, color, opponentUsername, opponentUserId }) => {
             setColor(color);
             setOpponentUsername(opponentUsername);
             setGameStatus("playing");
+            setOpponentUserId(opponentUserId);
           };
 
           const onOpponentLeft = () => setGameStatus("opponent-left");

@@ -11,3 +11,4 @@ export const reLoginAtom = atom(null);
 export const tokenAtom = atom(null);
 export const playingPlayersListAtom = atom(new Set());
 export const chessMovesAtom = atom([]);
+export const opponentUserIdAtom = atom(null);
