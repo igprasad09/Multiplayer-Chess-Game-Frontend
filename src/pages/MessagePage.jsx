@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useNavigate, useParams } from "react-router-dom";
 import SideBar from "../components/SideBar";
@@ -31,6 +31,13 @@ export function MessagePage() {
   const [composeText, setComposeText] = useState("");
   const [unknownUsername, setUnknownUsername] = useState("");
   const [chats, setChats] = useState([]);
+  const scrollRef = useRef(null);
+
+  useEffect(()=>{
+     if(scrollRef.current){
+       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+     }
+  },[chats]);
 
   function handleSend() {
     if (text.trim() === "") return;
@@ -207,7 +214,7 @@ export function MessagePage() {
             </div>
 
             {/* chat messages */}
-            <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-2">
+            <div ref={scrollRef} className="flex-1 p-4 overflow-y-auto flex flex-col gap-2">
               {chats.map((chat) => (
                 <div
                   key={chat.id}

@@ -14,6 +14,7 @@ import playSound from "../hooks/playSound";
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import { LiveChatBox } from "../components/LiveChatBox";
 
 function GamePage() {
   const [turn, setTurn] = useAtom(turnAtom);
@@ -115,7 +116,7 @@ function GamePage() {
       </div>
       <ChessGame />
       <div className="bg-mauve-900 h-150 w-80 mr-4 ml-4">
-
+         <LiveChatBox/>
       </div>
       <div className="bg-zinc-900 h-150 w-80 flex flex-col">
         <div className="text-white flex justify-center border-b-2 border-sky-500 bg-zinc-700 font-bold p-3">
