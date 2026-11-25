@@ -2,7 +2,8 @@
   "rewrites": [
     { "source": "/auth/:path*", "destination": "https://chessbackend.development.catalystappsail.in/auth/:path*" },
     { "source": "/api/:path*", "destination": "https://chessbackend.development.catalystappsail.in/api/:path*" },
-    { "source": "/socket.io/:path*", "destination": "https://chessbackend.development.catalystappsail.in/socket.io/:path*" },
+    { "source": "/socket.io", "destination": "https://chessbackend.development.catalystappsail.in/socket.io/" },
+    { "source": "/socket.io/(.*)", "destination": "https://chessbackend.development.catalystappsail.in/socket.io/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
