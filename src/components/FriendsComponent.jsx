@@ -7,7 +7,7 @@ import { onlineUsersAtom, userIdAtom } from "../utils/store/authAtom";
 import socket from "../services/socket";
 import { Friends } from "./Friends";
 import { allFriendsSetAtom, friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
-
+import { ENV } from "../config/env";
 
 function FriendsComponent(){
     const [friendsFilter, setFriendsFilter] = useAtom(friendFilterAtom);
@@ -31,7 +31,7 @@ function FriendsComponent(){
     async function featchAllUsers() {
         try {
             const res = await axios.get(
-                "http://localhost:3000/api/allusers",
+                `${ENV.API_URL}/api/allusers`,
                 {
                     params: { 
                         page,

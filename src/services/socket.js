@@ -1,8 +1,10 @@
 import { io } from "socket.io-client";
+import { ENV } from "../config/env";
 
-const socket = io("http://localhost:3000", {
+// Empty API_URL -> undefined -> Socket.IO uses the page origin (Vite proxy in dev)
+const socket = io(ENV.API_URL || undefined, {
   autoConnect: false,
-  transports: ["websocket"],
+  transports: ["polling"],   // Catalyst gateway fails on the WebSocket upgrade
   withCredentials: true,     // send cookies with the handshake
 });
 

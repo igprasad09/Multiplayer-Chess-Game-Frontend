@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSetAtom } from "jotai";
 import { reLoginAtom, tokenAtom, userNameAtom } from "../utils/store/ChessAtom";
 import { connectSocket, disconnectSocket } from "../services/socket";
+import { ENV } from "../config/env";
 
 const REMEMBER_KEY = "chess_remember_me";
 const USERNAME_KEY = "chess_remembered_username";
@@ -57,8 +58,8 @@ function LoginSignup(){
         if(!username || !password){return toast.error("Enter Username and Password")}
 
         const url = loginSignup == "login"
-            ? "http://localhost:3000/auth/login"
-            : "http://localhost:3000/auth/signup";
+            ? `${ENV.API_URL}/auth/login`
+            : `${ENV.API_URL}/auth/signup`;
 
         async function authRequest(){
             const res = await axios.post(url, {username, password}, {withCredentials: true});
