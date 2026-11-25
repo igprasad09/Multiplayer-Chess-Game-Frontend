@@ -8,6 +8,7 @@ import axios from "axios";
 import socket, { disconnectSocket } from "../services/socket";
 import { allFriendsSetAtom, friendFilterAtom, friendsDataAtom } from "../utils/store/friendsAtom";
 import { refreshChatsAtom, unreadMessagesCountAtom } from "../utils/store/messageAtom";
+import { ENV } from "../config/env";
 
 const MailIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
@@ -58,7 +59,7 @@ function SideBar(){
 
     useEffect(()=>{
         async function authCheck() {
-            await axios.post("http://localhost:3000/auth/login",
+            await axios.post(`${ENV.API_URL}/auth/login`,
                 {},
                 { withCredentials: true }).then((res)=>{
                         if(res.data.success){
@@ -78,7 +79,7 @@ function SideBar(){
     async function handleLogout(){
         try{
             await toast.promise(
-                axios.post("http://localhost:3000/auth/logout",{},{withCredentials: true})
+                axios.post(`${ENV.API_URL}/auth/logout`,{},{withCredentials: true})
                 .then((res)=>{
                     setRelogin(res.data.relogin);
                     disconnectSocket();

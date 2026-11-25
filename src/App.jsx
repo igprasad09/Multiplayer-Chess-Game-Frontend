@@ -14,6 +14,7 @@ import { friendsDataAtom, refreshFriendsAtom } from "./utils/store/friendsAtom";
 import { MessagePage } from "./pages/MessagePage";
 import { showMessageToast } from "./utils/store/messageToast";
 import { refreshChatsAtom } from "./utils/store/messageAtom";
+import { ENV } from "./config/env";
 
 function App() {
   const [username, setUsername] = useAtom(userNameAtom);
@@ -45,7 +46,7 @@ function App() {
     socket.on("gotMessage", onGotMessage);
 
     // ask the server if the cookie is valid; connect only if logged in
-    fetch("http://localhost:3000/auth/me", { credentials: "include" })
+    fetch(`${ENV.API_URL}/auth/me`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.success) {
