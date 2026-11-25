@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/auth/:path*", "destination": "https://chessbackend.development.catalystappsail.in/auth/:path*" },
+    { "source": "/api/:path*", "destination": "https://chessbackend.development.catalystappsail.in/api/:path*" },
+    { "source": "/socket.io/:path*", "destination": "https://chessbackend.development.catalystappsail.in/socket.io/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
