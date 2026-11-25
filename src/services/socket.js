@@ -4,8 +4,9 @@ import { ENV } from "../config/env";
 // Empty API_URL -> undefined -> Socket.IO uses the page origin (Vite proxy in dev)
 const socket = io(ENV.API_URL || undefined, {
   autoConnect: false,
-  transports: ["polling"],   // Catalyst gateway fails on the WebSocket upgrade
-  withCredentials: true,     // send cookies with the handshake
+  transports: ["polling"],
+  withCredentials: true,
+  addTrailingSlash: false,
 });
 
 export function connectSocket() {
